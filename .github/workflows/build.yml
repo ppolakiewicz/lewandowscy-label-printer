@@ -1,13 +1,15 @@
 name: build
 
-# Builds Etykiety.exe and publishes it as a GitHub release for every v* tag.
-# Forgejo tags each commit on main (.forgejo/workflows/tag.yml) and the push
-# mirror brings the tag here. The newest exe is always at
-# releases/latest/download/Etykiety.exe.
+# The only place the project is built. Every v* tag gets a GitHub release with
+# Etykiety.exe; the newest one is always at releases/latest/download/Etykiety.exe.
+# Tags are created on commit by .githooks/post-commit and arrive through the
+# Forgejo push mirror (tags made here on GitHub would be deleted by the mirror).
+# A manual run (workflow_dispatch) builds the exe as an artifact without a release.
 
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -26,7 +28,11 @@ jobs:
         id: version
         shell: bash
         run: |
-          echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=0.0.0-dev.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          fi
           {
             echo 'notes<<EOF_NOTES'
             git log -1 --format=%B
@@ -54,6 +60,7 @@ jobs:
           if-no-files-found: error
 
       - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}

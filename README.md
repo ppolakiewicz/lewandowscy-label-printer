@@ -5,14 +5,21 @@ na drukarce Zebra LP2844 podłączonej przez USB. Plan: [docs/PLAN.md](docs/PLAN
 
 ## Pobranie programu
 
-Budowanie odbywa się na GitHubie (repozytorium jest lustrem tego z Forgejo). Każdy commit
-na `main` dostaje tag `v0.1.<liczba commitów>` (nadaje go Forgejo Actions), a GitHub buduje do niego
-wydanie z gotowym plikiem `Etykiety.exe`:
+Budowanie odbywa się na GitHubie (repozytorium jest lustrem tego z Forgejo). Projekt jest budowany
+wyłącznie na GitHubie (nie na Forgejo). Każdy commit na `main` dostaje tag `v0.1.<liczba commitów>`
+(hook `.githooks/post-commit`), a GitHub buduje do niego wydanie z gotowym plikiem `Etykiety.exe`:
 
 - najnowsza wersja: https://github.com/ppolakiewicz/lewandowscy-label-printer/releases/latest/download/Etykiety.exe
 - wszystkie wersje: https://github.com/ppolakiewicz/lewandowscy-label-printer/releases
 
 Repozytorium jest prywatne, więc pobieranie wymaga zalogowania na konto z dostępem.
+
+Hook trzeba włączyć raz w każdym klonie:
+
+```
+git config core.hooksPath .githooks
+git config push.followTags true
+```
 
 ## Instalacja drukarki (Windows 11, bez sterownika Zebry)
 
