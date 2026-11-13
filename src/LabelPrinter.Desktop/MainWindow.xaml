@@ -1,0 +1,120 @@
+<Window x:Class="LabelPrinter.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Etykiety – kalibracja drukarki"
+        Width="860" Height="600" MinWidth="760" MinHeight="540"
+        WindowStartupLocation="CenterScreen">
+    <DockPanel Margin="12">
+        <TextBlock x:Name="StatusText" DockPanel.Dock="Bottom" Margin="0,10,0,0" TextWrapping="Wrap" />
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="380" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <GroupBox Header="Drukarka" Padding="8">
+                    <StackPanel>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Odśwież" Margin="6,0,0,0" Padding="10,2"
+                                    Click="RefreshPrinters_Click" />
+                            <ComboBox x:Name="PrinterCombo" SelectionChanged="Settings_SelectionChanged" />
+                        </DockPanel>
+                        <TextBlock Margin="0,6,0,0" FontSize="11" Foreground="Gray" TextWrapping="Wrap"
+                                   Text="Zebra LP2844 ma być dodana w Windows jako „Generic / Text Only” na porcie USB (np. USB001)." />
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="Etykieta i kalibracja" Padding="8" Margin="0,8,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.Resources>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="Margin" Value="0,3" />
+                            </Style>
+                            <Style TargetType="TextBox">
+                                <Setter Property="Margin" Value="0,3" />
+                            </Style>
+                        </Grid.Resources>
+
+                        <TextBlock Grid.Row="0" Text="Szerokość etykiety (mm)" />
+                        <TextBox Grid.Row="0" Grid.Column="1" x:Name="WidthBox" TextChanged="Settings_TextChanged" />
+
+                        <TextBlock Grid.Row="1" Text="Wysokość etykiety (mm)" />
+                        <TextBox Grid.Row="1" Grid.Column="1" x:Name="HeightBox" TextChanged="Settings_TextChanged" />
+
+                        <TextBlock Grid.Row="2" Text="Przerwa między etykietami (mm)" />
+                        <TextBox Grid.Row="2" Grid.Column="1" x:Name="GapBox" TextChanged="Settings_TextChanged" />
+
+                        <TextBlock Grid.Row="3" Text="Przesunięcie w poziomie (mm)" />
+                        <TextBox Grid.Row="3" Grid.Column="1" x:Name="OffsetXBox" TextChanged="Settings_TextChanged" />
+
+                        <TextBlock Grid.Row="4" Text="Przesunięcie w pionie (mm)" />
+                        <TextBox Grid.Row="4" Grid.Column="1" x:Name="OffsetYBox" TextChanged="Settings_TextChanged" />
+
+                        <TextBlock Grid.Row="5" Text="Ciemność druku (0–15)" />
+                        <DockPanel Grid.Row="5" Grid.Column="1" Margin="0,3">
+                            <TextBlock x:Name="DarknessValue" DockPanel.Dock="Right" Width="24" TextAlignment="Right" Margin="0" />
+                            <Slider x:Name="DarknessSlider" Minimum="0" Maximum="15" TickFrequency="1"
+                                    IsSnapToTickEnabled="True" ValueChanged="DarknessSlider_ValueChanged" />
+                        </DockPanel>
+
+                        <TextBlock Grid.Row="6" Text="Prędkość (1–4)" />
+                        <ComboBox Grid.Row="6" Grid.Column="1" x:Name="SpeedCombo" Margin="0,3"
+                                  SelectionChanged="Settings_SelectionChanged" />
+
+                        <CheckBox Grid.Row="7" Grid.ColumnSpan="2" x:Name="TopFirstCheck" Margin="0,6,0,3"
+                                  Content="Drukuj od góry etykiety (ZT)" Click="Settings_Click" />
+
+                        <CheckBox Grid.Row="8" Grid.ColumnSpan="2" x:Name="InvertCheck" Margin="0,3"
+                                  Content="Odwróć grafikę (tylko gdy test wychodzi w negatywie)" Click="Settings_Click" />
+                    </Grid>
+                </GroupBox>
+
+                <WrapPanel Margin="0,10,0,0">
+                    <WrapPanel.Resources>
+                        <Style TargetType="Button">
+                            <Setter Property="Margin" Value="0,0,8,8" />
+                            <Setter Property="Padding" Value="12,5" />
+                        </Style>
+                    </WrapPanel.Resources>
+                    <Button Content="Wydruk testowy" FontWeight="Bold" Click="TestPrint_Click" />
+                    <Button Content="Zapisz ustawienia" Click="Save_Click" />
+                    <Button Content="Auto-kalibracja czujnika" Click="AutoSense_Click"
+                            ToolTip="Drukarka sama zmierzy długość etykiety i przerwy (wysunie kilka etykiet)." />
+                    <Button Content="Konfiguracja drukarki" Click="PrinterConfiguration_Click"
+                            ToolTip="Drukarka wydrukuje swoje ustawienia." />
+                    <Button Content="Zapisz test do pliku…" Click="SaveTestFile_Click"
+                            ToolTip="Zapisuje polecenia EPL wydruku testowego do pliku (diagnostyka)." />
+                </WrapPanel>
+            </StackPanel>
+
+            <GroupBox Grid.Column="1" Header="Podgląd grafiki testowej" Padding="8" Margin="12,0,0,0">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Bottom" Margin="0,8,0,0" FontSize="11" Foreground="Gray" TextWrapping="Wrap"
+                               Text="Ramka powinna wypaść na krawędzi etykiety, a czarny kwadrat w prawym dolnym rogu. Napisy drukuje sama drukarka, więc nie ma ich w podglądzie." />
+                    <Border Background="White" BorderBrush="LightGray" BorderThickness="1" Padding="10"
+                            VerticalAlignment="Top">
+                        <Image x:Name="PreviewImage" Stretch="Uniform" RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                    </Border>
+                </DockPanel>
+            </GroupBox>
+        </Grid>
+    </DockPanel>
+</Window>

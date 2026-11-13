@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LabelPrinter.Core/LabelPrinter.Core.csproj" />
+    <Project Path="src/LabelPrinter.Desktop/LabelPrinter.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LabelPrinter.Core.Tests/LabelPrinter.Core.Tests.csproj" />
+  </Folder>
+</Solution>
