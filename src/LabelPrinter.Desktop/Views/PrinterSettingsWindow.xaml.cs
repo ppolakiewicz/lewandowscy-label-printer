@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Windows;
@@ -5,42 +6,52 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using LabelPrinter.Core;
 using LabelPrinter.Core.Epl;
-using LabelPrinter.Core.Layout;
 using LabelPrinter.Desktop.Printing;
 using LabelPrinter.Desktop.Rendering;
 using Microsoft.Win32;
 
-namespace LabelPrinter.Desktop;
+namespace LabelPrinter.Desktop.Views;
 
-public partial class MainWindow : Window
+/// <summary>
+/// Printer choice and calibration (the stage-1 window): label size, gap, offsets, darkness, speed, ZT/ZB,
+/// test print, sensor auto-calibration, printer configuration label, test job to a file.
+/// </summary>
+public partial class PrinterSettingsWindow : Window
 {
     private static readonly string[] PreferredPrinterHints = ["2844", "zebra", "generic", "text only"];
 
-    private const string TestPatternHint =
-        "Ramka powinna wypaść na krawędzi etykiety, a czarny kwadrat w prawym dolnym rogu. Napisy drukuje sama drukarka, więc nie ma ich w podglądzie.";
-
-    private const string SampleTextHint = "Podgląd próbnego tekstu – tak zostanie wydrukowany (bez przesunięcia z kalibracji).";
-
-    private readonly LabelRenderer _renderer = new();
-
+    private readonly AppState _state;
     private bool _ready;
 
-    public MainWindow()
+    internal PrinterSettingsWindow(AppState state)
     {
+        _state = state;
         InitializeComponent();
+        AppIcon.ApplyTo(this);
 
         for (int speed = PrinterConfig.MinSpeed; speed <= PrinterConfig.MaxSpeed; speed++)
         {
             SpeedCombo.Items.Add(speed);
         }
 
-        var config = PrinterConfigStore.Load(AppPaths.SettingsFile);
+        var config = state.Config;
         LoadPrinters(config.PrinterName);
         ShowConfig(config);
 
         _ready = true;
         UpdatePreview();
-        SetStatus("Ustawienia: " + AppPaths.SettingsFile, isError: false);
+        if (string.IsNullOrEmpty(config.PrinterName))
+        {
+            SetStatus(PrinterCombo.SelectedItem is null
+                ? "Nie znaleziono żadnej drukarki. Dodaj drukarkę w Windows i kliknij „Odśwież”."
+                : "Sprawdź, czy wybrana jest właściwa drukarka, zrób wydruk testowy i zapisz ustawienia.", isError: false);
+        }
+        else
+        {
+            SetStatus("Ustawienia: " + AppPaths.SettingsFile, isError: false);
+        }
+
+        Closing += Window_Closing;
     }
 
     private void LoadPrinters(string? preferred)
@@ -135,12 +146,17 @@ public partial class MainWindow : Window
         try
         {
             RawPrinter.Send(config.PrinterName, buildJob(config), "Etykiety – " + action);
-            PrinterConfigStore.Save(AppPaths.SettingsFile, config);
-            SetStatus($"{action}: wysłano do „{config.PrinterName}”.", isError: false);
         }
         catch (Exception ex)
         {
             SetStatus($"{action}: błąd – {ex.Message}", isError: true);
+            return;
+        }
+
+        // As in stage 1: settings that printed successfully are kept.
+        if (TrySave(config))
+        {
+            SetStatus($"{action}: wysłano do „{config.PrinterName}”. Ustawienia zapisane.", isError: false);
         }
     }
 
@@ -152,15 +168,49 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (TrySave(config))
+        {
+            ShowConfig(config); // shows values after clamping
+            SetStatus(string.IsNullOrEmpty(config.PrinterName)
+                ? "Zapisano ustawienia, ale nie wybrano drukarki."
+                : "Zapisano ustawienia.", isError: string.IsNullOrEmpty(config.PrinterName));
+        }
+    }
+
+    private bool TrySave(PrinterConfig config)
+    {
         try
         {
-            PrinterConfigStore.Save(AppPaths.SettingsFile, config);
-            ShowConfig(config); // shows values after clamping
-            SetStatus("Zapisano ustawienia.", isError: false);
+            _state.SaveConfig(config);
+            return true;
         }
         catch (Exception ex)
         {
             SetStatus("Nie udało się zapisać ustawień: " + ex.Message, isError: true);
+            return false;
+        }
+    }
+
+    private void Window_Closing(object? sender, CancelEventArgs e)
+    {
+        if (!TryReadConfig(out var config, out var error))
+        {
+            var discard = MessageBox.Show(this, error + "\n\nZamknąć okno bez zapisywania zmian?", Title,
+                MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+            e.Cancel = discard != MessageBoxResult.Yes;
+            return;
+        }
+
+        if (config.SameSettings(_state.Config))
+        {
+            return;
+        }
+
+        var answer = MessageBox.Show(this, "Zapisać zmienione ustawienia drukarki?", Title,
+            MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Yes);
+        if (answer == MessageBoxResult.Cancel || (answer == MessageBoxResult.Yes && !TrySave(config)))
+        {
+            e.Cancel = true;
         }
     }
 
@@ -210,30 +260,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private void PrintSampleText_Click(object sender, RoutedEventArgs e)
-    {
-        var content = SampleContent();
-        if (content.IsEmpty)
-        {
-            SetStatus("Wpisz próbny tekst.", isError: true);
-            return;
-        }
-
-        SendToPrinter("Próbny tekst", config =>
-            EplLabels.Image(config, _renderer.Render(content, config.LabelWidthDots, config.LabelHeightDots).Bitmap, copies: 1));
-    }
-
-    private void SampleText_TextChanged(object sender, TextChangedEventArgs e) => UpdatePreview();
-
-    /// <summary>The sample text as label content: '|' separates manual lines, otherwise the text wraps automatically.</summary>
-    private LabelContent SampleContent()
-    {
-        var text = SampleTextBox.Text;
-        return text.Contains('|')
-            ? new LabelContent { Mode = LayoutMode.Manual, Lines = text.Split('|') }
-            : LabelContent.FromText(text);
-    }
-
     private void UpdatePreview()
     {
         if (!_ready || !TryReadConfig(out var config, out _))
@@ -241,45 +267,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var content = SampleContent();
-        if (content.IsEmpty)
-        {
-            PreviewImage.Source = EplLabels.TestPattern(config).ToBitmapSource();
-            PreviewHint.Text = TestPatternHint;
-            SampleInfo.Text = string.Empty;
-            return;
-        }
-
-        try
-        {
-            var rendered = _renderer.Render(content, config.LabelWidthDots, config.LabelHeightDots);
-            PreviewImage.Source = rendered.Bitmap.ToBitmapSource();
-            PreviewHint.Text = SampleTextHint;
-            SampleInfo.Text = Describe(rendered.Layout);
-            SampleInfo.Foreground = rendered.Layout.Overflow ? Brushes.Firebrick : SystemColors.ControlTextBrush;
-        }
-        catch (Exception ex)
-        {
-            SampleInfo.Text = "Błąd podglądu: " + ex.Message;
-            SampleInfo.Foreground = Brushes.Firebrick;
-        }
-    }
-
-    private static string Describe(LabelLayout layout)
-    {
-        var text = string.Format(
-            CultureInfo.CurrentCulture, "Czcionka {0:0.#} mm, linijek: {1}.",
-            layout.FontSizeDots / Units.DotsPerMm, layout.Lines.Count);
-        if (layout.Overflow)
-        {
-            text += " Tekst nie mieści się na etykiecie!";
-        }
-        else if (layout.WordBroken)
-        {
-            text += " Za długie słowo zostało podzielone.";
-        }
-
-        return text;
+        PreviewImage.Source = EplLabels.TestPattern(config).ToBitmapSource();
     }
 
     private void SetStatus(string message, bool isError)

@@ -1,0 +1,33 @@
+<Window x:Class="LabelPrinter.Desktop.Views.LabelEditDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:LabelPrinter.Desktop.Controls"
+        Title="Tekst"
+        SizeToContent="WidthAndHeight" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <DockPanel Margin="16">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button x:Name="SaveButton" Content="_Zapisz" Padding="24,5" Margin="0,0,8,0" FontWeight="SemiBold" IsDefault="True"
+                    Click="Save_Click" />
+            <Button Content="Anuluj" Padding="20,5" IsCancel="True" />
+        </StackPanel>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="470" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel>
+                <controls:LabelEditor x:Name="Editor" />
+                <Label Content="_Notatka (widoczna tylko w bazie):" Target="{Binding ElementName=NoteBox}" Padding="0" Margin="0,14,0,4" />
+                <TextBox x:Name="NoteBox" Padding="4,3" FontSize="14" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Margin="20,0,0,0" Width="320">
+                <TextBlock Text="Podgląd" FontWeight="SemiBold" Margin="0,0,0,8" />
+                <controls:LabelPreview x:Name="Preview" PreviewWidth="300" />
+            </StackPanel>
+        </Grid>
+    </DockPanel>
+</Window>

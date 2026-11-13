@@ -22,7 +22,7 @@
 | Język / UI | C# .NET 10 (LTS), WPF |
 | Wynik | jeden plik `.exe` (self-contained, single-file, win-x64) |
 | Baza | SQLite w `%APPDATA%\LabelPrinter\` |
-| Budowanie | Linux (`EnableWindowsTargeting`) + Forgejo Actions |
+| Budowanie | GitHub Actions (Windows), wydania z tagów `v*` |
 
 ## Funkcje v1
 - Pole tekstowe z podpowiedziami (fragment, bez wielkości liter i polskich znaków,
@@ -35,10 +35,11 @@
 - Ustawienia: wybór drukarki, kalibracja, wydruk testowy, domyślna czcionka.
 
 ## Etapy
-1. Szkielet + wysyłanie EPL RAW + wydruk testowy i kalibracja (exe testowe dla klienta).
-2. Silnik etykiety: zawijanie, dopasowanie czcionki, podgląd, konwersja do `GW` + testy.
-3. Baza SQLite, podpowiedzi, okno edycji bazy.
-4. Ustawienia, import/eksport, ikona, budowanie exe w Forgejo Actions.
+1. ✅ Szkielet + wysyłanie EPL RAW + wydruk testowy i kalibracja (exe testowe dla klienta).
+2. ✅ Silnik etykiety: zawijanie, dopasowanie czcionki, podgląd, konwersja do `GW` + testy.
+3. ✅ Baza SQLite, podpowiedzi, okno edycji bazy.
+4. ✅ Interfejs: okno główne (podpowiedzi, podgląd, drukowanie), okno bazy (edycja, import/eksport CSV),
+   ustawienia drukarki jako osobne okno, ikona, pomoc; budowanie exe w GitHub Actions.
 5. Test u klienta: instalacja drukarki „Generic / Text Only”, kalibracja na rolce, poprawki.
 
 ## Otwarte
