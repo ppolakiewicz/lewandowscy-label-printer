@@ -6,7 +6,8 @@ na drukarce Zebra LP2844 podłączonej przez USB. Plan: [docs/PLAN.md](docs/PLAN
 ## Pobranie programu
 
 Budowanie odbywa się na GitHubie (repozytorium jest lustrem tego z Forgejo). Każdy commit
-na `main` tworzy nowe wydanie `v0.1.<numer>` z gotowym plikiem `Etykiety.exe`:
+na `main` dostaje tag `v0.1.<liczba commitów>` (nadaje go Forgejo Actions), a GitHub buduje do niego
+wydanie z gotowym plikiem `Etykiety.exe`:
 
 - najnowsza wersja: https://github.com/ppolakiewicz/lewandowscy-label-printer/releases/latest/download/Etykiety.exe
 - wszystkie wersje: https://github.com/ppolakiewicz/lewandowscy-label-printer/releases

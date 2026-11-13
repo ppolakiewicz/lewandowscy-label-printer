@@ -1,0 +1,35 @@
+# Tags every commit pushed to main as v<VERSION_PREFIX>.<number of commits>.
+# The push mirror carries the tag to GitHub, where .github/workflows/build.yml
+# builds Etykiety.exe and publishes it as a release. The tag has to be created
+# here: the mirror deletes GitHub tags that Forgejo does not have.
+# (Because this directory exists, Forgejo ignores .github/workflows.)
+name: tag
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  tag:
+    runs-on: docker
+    steps:
+      - name: Tag the commit
+        env:
+          TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+          VERSION_PREFIX: '0.1'
+        run: |
+          set -eu
+          auth=$(printf 'x-access-token:%s' "$TOKEN" | base64 -w0)
+          git -c http.extraHeader="Authorization: basic $auth" clone -q --bare \
+            "${{ github.server_url }}/${{ github.repository }}.git" repo.git
+          cd repo.git
+          git config http.extraHeader "Authorization: basic $auth"
+          if git tag --points-at "$SHA" | grep -q '^v'; then
+            echo "Already tagged: $(git tag --points-at "$SHA" | tr '\n' ' ')"
+            exit 0
+          fi
+          tag="v${VERSION_PREFIX}.$(git rev-list --count "$SHA")"
+          git tag "$tag" "$SHA"
+          git push -q origin "refs/tags/$tag"
+          echo "Tagged $SHA as $tag"

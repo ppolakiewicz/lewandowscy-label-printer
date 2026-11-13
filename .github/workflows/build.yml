@@ -1,19 +1,16 @@
 name: build
 
-# Every push to main builds Etykiety.exe and publishes it as a new GitHub release
-# (tag v<VERSION_PREFIX>.<run number>). The newest one is always available at
+# Builds Etykiety.exe and publishes it as a GitHub release for every v* tag.
+# Forgejo tags each commit on main (.forgejo/workflows/tag.yml) and the push
+# mirror brings the tag here. The newest exe is always at
 # releases/latest/download/Etykiety.exe.
 
 on:
   push:
-    branches: [main]
-  workflow_dispatch:
+    tags: ['v*']
 
 permissions:
   contents: write
-
-env:
-  VERSION_PREFIX: '0.1'
 
 jobs:
   build:
@@ -28,7 +25,13 @@ jobs:
       - name: Version
         id: version
         shell: bash
-        run: echo "version=${VERSION_PREFIX}.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          {
+            echo 'notes<<EOF_NOTES'
+            git log -1 --format=%B
+            echo 'EOF_NOTES'
+          } >> "$GITHUB_OUTPUT"
 
       - name: Test
         run: dotnet test tests/LabelPrinter.Core.Tests/LabelPrinter.Core.Tests.csproj -c Release
@@ -53,12 +56,11 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.version }}
+          tag_name: ${{ github.ref_name }}
           name: Etykiety ${{ steps.version.outputs.version }}
-          target_commitish: ${{ github.sha }}
           make_latest: true
           body: |
             Commit: ${{ github.sha }}
 
-            ${{ github.event.head_commit.message }}
+            ${{ steps.version.outputs.notes }}
           files: publish/Etykiety.exe
