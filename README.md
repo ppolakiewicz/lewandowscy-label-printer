@@ -5,9 +5,13 @@ na drukarce Zebra LP2844 podłączonej przez USB. Plan: [docs/PLAN.md](docs/PLAN
 
 ## Pobranie programu
 
-Budowanie odbywa się na GitHubie (repozytorium jest lustrem tego z Forgejo):
-zakładka **Actions** → ostatnie uruchomienie `build` → artefakt **Etykiety-win-x64**.
-Wersje oznaczone tagiem `v*` trafiają też do **Releases**.
+Budowanie odbywa się na GitHubie (repozytorium jest lustrem tego z Forgejo). Każdy commit
+na `main` tworzy nowe wydanie `v0.1.<numer>` z gotowym plikiem `Etykiety.exe`:
+
+- najnowsza wersja: https://github.com/ppolakiewicz/lewandowscy-label-printer/releases/latest/download/Etykiety.exe
+- wszystkie wersje: https://github.com/ppolakiewicz/lewandowscy-label-printer/releases
+
+Repozytorium jest prywatne, więc pobieranie wymaga zalogowania na konto z dostępem.
 
 ## Instalacja drukarki (Windows 11, bez sterownika Zebry)
 
