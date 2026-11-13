@@ -1,0 +1,78 @@
+<Window x:Class="LabelPrinter.Desktop.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:LabelPrinter.Desktop.Controls"
+        Title="Etykiety"
+        Width="1100" Height="700" MinWidth="960" MinHeight="620"
+        WindowStartupLocation="CenterScreen">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top" Padding="4,2">
+            <MenuItem x:Name="DatabaseMenu" Header="_Baza tekstów…" Click="DatabaseMenu_Click"
+                      ToolTip="Przeglądanie, poprawianie i usuwanie zapamiętanych tekstów, import i eksport CSV (Ctrl+B)" />
+            <MenuItem Header="_Ustawienia drukarki…" Click="SettingsMenu_Click"
+                      ToolTip="Wybór drukarki, kalibracja, wydruk testowy" />
+            <MenuItem Header="Pomo_c">
+                <MenuItem Header="_Jak używać programu" InputGestureText="F1" Click="HelpMenu_Click" />
+                <MenuItem Header="Otwórz _folder z danymi" Click="DataFolderMenu_Click" />
+            </MenuItem>
+        </Menu>
+
+        <!-- Status bar -->
+        <Border x:Name="StatusBorder" DockPanel.Dock="Bottom" BorderBrush="#FFD0D0D0" BorderThickness="0,1,0,0" Padding="12,6">
+            <DockPanel>
+                <TextBlock x:Name="PrinterText" DockPanel.Dock="Right" Margin="16,0,0,0" Foreground="{StaticResource HintBrush}"
+                           VerticalAlignment="Center" />
+                <TextBlock x:Name="StatusText" TextWrapping="Wrap" VerticalAlignment="Center" />
+            </DockPanel>
+        </Border>
+
+        <!-- Warnings shown at the top until resolved -->
+        <Border x:Name="PrinterBanner" DockPanel.Dock="Top" Visibility="Collapsed" Padding="12,8"
+                Background="{StaticResource WarningBackground}" BorderBrush="{StaticResource WarningBorder}" BorderThickness="0,0,0,1">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Content="Ustawienia drukarki…" Padding="12,3" Click="SettingsMenu_Click" />
+                <TextBlock VerticalAlignment="Center" TextWrapping="Wrap" FontWeight="SemiBold"
+                           Text="Nie wybrano drukarki. Zanim zaczniesz drukować, otwórz ustawienia, wybierz drukarkę i zrób wydruk testowy." />
+            </DockPanel>
+        </Border>
+        <Border x:Name="DatabaseBanner" DockPanel.Dock="Top" Visibility="Collapsed" Padding="12,8"
+                Background="{StaticResource WarningBackground}" BorderBrush="{StaticResource WarningBorder}" BorderThickness="0,0,0,1">
+            <TextBlock x:Name="DatabaseBannerText" TextWrapping="Wrap" />
+        </Border>
+
+        <Grid Margin="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="380" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <GroupBox Header="Tekst etykiety" Padding="10">
+                <controls:LabelEditor x:Name="Editor" />
+            </GroupBox>
+
+            <StackPanel Grid.Column="1" Margin="20,8,0,0" Width="480">
+                <controls:LabelPreview x:Name="Preview" PreviewWidth="460" />
+
+                <!-- Copies and print -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,22,0,0">
+                    <Label Content="Liczba _kopii:" Target="{Binding ElementName=CopiesBox}" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="15" />
+                    <Button x:Name="LessButton" Content="−" Width="32" FontSize="16" Click="LessButton_Click" Focusable="False"
+                            ToolTip="Mniej kopii (strzałka ↓ w polu)" />
+                    <TextBox x:Name="CopiesBox" Width="60" FontSize="18" Margin="4,0" TextAlignment="Center"
+                             VerticalContentAlignment="Center" MaxLength="3"
+                             ToolTip="Liczba kopii (1–999). Strzałki ↑↓ zmieniają liczbę, Enter drukuje." />
+                    <Button x:Name="MoreButton" Content="+" Width="32" FontSize="16" Click="MoreButton_Click" Focusable="False"
+                            ToolTip="Więcej kopii (strzałka ↑ w polu)" />
+                </StackPanel>
+
+                <Button x:Name="PrintButton" Margin="0,14,0,0" Padding="40,10" HorizontalAlignment="Center"
+                        FontSize="24" FontWeight="Bold" Click="PrintButton_Click"
+                        ToolTip="Drukuj etykietę (Enter w polu tekstu albo Ctrl+P)">
+                    <AccessText Text="_Drukuj" />
+                </Button>
+                <TextBlock Margin="0,8,0,0" HorizontalAlignment="Center" Foreground="{StaticResource HintBrush}" FontSize="12"
+                           Text="Enter w polu tekstu lub Ctrl+P – drukuj" />
+            </StackPanel>
+        </Grid>
+    </DockPanel>
+</Window>

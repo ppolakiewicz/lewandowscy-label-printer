@@ -8,4 +8,7 @@ internal static class AppPaths
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LabelPrinter");
 
     public static string SettingsFile => Path.Combine(DataDirectory, "settings.json");
+
+    /// <summary>The saved-text database (SQLite).</summary>
+    public static string DatabaseFile => Path.Combine(DataDirectory, "labels.db");
 }

@@ -46,5 +46,21 @@ public sealed class PrinterConfig
         return c;
     }
 
+    /// <summary>True when every stored setting equals the other's (used to detect unsaved changes).</summary>
+    public bool SameSettings(PrinterConfig other)
+    {
+        ArgumentNullException.ThrowIfNull(other);
+        return PrinterName == other.PrinterName
+            && LabelWidthMm.Equals(other.LabelWidthMm)
+            && LabelHeightMm.Equals(other.LabelHeightMm)
+            && GapMm.Equals(other.GapMm)
+            && OffsetXMm.Equals(other.OffsetXMm)
+            && OffsetYMm.Equals(other.OffsetYMm)
+            && Darkness == other.Darkness
+            && Speed == other.Speed
+            && PrintTopFirst == other.PrintTopFirst
+            && InvertGraphics == other.InvertGraphics;
+    }
+
     private static double Finite(double value, double fallback) => double.IsFinite(value) ? value : fallback;
 }
