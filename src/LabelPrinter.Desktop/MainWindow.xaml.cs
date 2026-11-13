@@ -3,11 +3,11 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using LabelPrinter.Core;
 using LabelPrinter.Core.Epl;
-using LabelPrinter.Core.Graphics;
+using LabelPrinter.Core.Layout;
 using LabelPrinter.Desktop.Printing;
+using LabelPrinter.Desktop.Rendering;
 using Microsoft.Win32;
 
 namespace LabelPrinter.Desktop;
@@ -15,6 +15,13 @@ namespace LabelPrinter.Desktop;
 public partial class MainWindow : Window
 {
     private static readonly string[] PreferredPrinterHints = ["2844", "zebra", "generic", "text only"];
+
+    private const string TestPatternHint =
+        "Ramka powinna wypaść na krawędzi etykiety, a czarny kwadrat w prawym dolnym rogu. Napisy drukuje sama drukarka, więc nie ma ich w podglądzie.";
+
+    private const string SampleTextHint = "Podgląd próbnego tekstu – tak zostanie wydrukowany (bez przesunięcia z kalibracji).";
+
+    private readonly LabelRenderer _renderer = new();
 
     private bool _ready;
 
@@ -203,6 +210,30 @@ public partial class MainWindow : Window
         }
     }
 
+    private void PrintSampleText_Click(object sender, RoutedEventArgs e)
+    {
+        var content = SampleContent();
+        if (content.IsEmpty)
+        {
+            SetStatus("Wpisz próbny tekst.", isError: true);
+            return;
+        }
+
+        SendToPrinter("Próbny tekst", config =>
+            EplLabels.Image(config, _renderer.Render(content, config.LabelWidthDots, config.LabelHeightDots).Bitmap, copies: 1));
+    }
+
+    private void SampleText_TextChanged(object sender, TextChangedEventArgs e) => UpdatePreview();
+
+    /// <summary>The sample text as label content: '|' separates manual lines, otherwise the text wraps automatically.</summary>
+    private LabelContent SampleContent()
+    {
+        var text = SampleTextBox.Text;
+        return text.Contains('|')
+            ? new LabelContent { Mode = LayoutMode.Manual, Lines = text.Split('|') }
+            : LabelContent.FromText(text);
+    }
+
     private void UpdatePreview()
     {
         if (!_ready || !TryReadConfig(out var config, out _))
@@ -210,22 +241,51 @@ public partial class MainWindow : Window
             return;
         }
 
-        PreviewImage.Source = ToBitmapSource(EplLabels.TestPattern(config));
+        var content = SampleContent();
+        if (content.IsEmpty)
+        {
+            PreviewImage.Source = EplLabels.TestPattern(config).ToBitmapSource();
+            PreviewHint.Text = TestPatternHint;
+            SampleInfo.Text = string.Empty;
+            return;
+        }
+
+        try
+        {
+            var rendered = _renderer.Render(content, config.LabelWidthDots, config.LabelHeightDots);
+            PreviewImage.Source = rendered.Bitmap.ToBitmapSource();
+            PreviewHint.Text = SampleTextHint;
+            SampleInfo.Text = Describe(rendered.Layout);
+            SampleInfo.Foreground = rendered.Layout.Overflow ? Brushes.Firebrick : SystemColors.ControlTextBrush;
+        }
+        catch (Exception ex)
+        {
+            SampleInfo.Text = "Błąd podglądu: " + ex.Message;
+            SampleInfo.Foreground = Brushes.Firebrick;
+        }
+    }
+
+    private static string Describe(LabelLayout layout)
+    {
+        var text = string.Format(
+            CultureInfo.CurrentCulture, "Czcionka {0:0.#} mm, linijek: {1}.",
+            layout.FontSizeDots / Units.DotsPerMm, layout.Lines.Count);
+        if (layout.Overflow)
+        {
+            text += " Tekst nie mieści się na etykiecie!";
+        }
+        else if (layout.WordBroken)
+        {
+            text += " Za długie słowo zostało podzielone.";
+        }
+
+        return text;
     }
 
     private void SetStatus(string message, bool isError)
     {
         StatusText.Text = message;
         StatusText.Foreground = isError ? Brushes.Firebrick : SystemColors.ControlTextBrush;
-    }
-
-    private static BitmapSource ToBitmapSource(MonoBitmap bitmap)
-    {
-        var source = BitmapSource.Create(
-            bitmap.Width, bitmap.Height, 203, 203, PixelFormats.BlackWhite, null,
-            bitmap.ToPackedRows(blackIsZero: true), bitmap.BytesPerRow);
-        source.Freeze();
-        return source;
     }
 
     private static bool TryParse(string text, out double value) =>
