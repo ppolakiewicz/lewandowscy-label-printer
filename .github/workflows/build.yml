@@ -4,11 +4,13 @@ name: build
 # Etykiety.exe; the newest one is always at releases/latest/download/Etykiety.exe.
 # Tags are created on commit by .githooks/post-commit and arrive through the
 # Forgejo push mirror (tags made here on GitHub would be deleted by the mirror).
-# A manual run (workflow_dispatch) builds the exe as an artifact without a release.
+# Pushes to other branches (and manual runs) only test and build the exe as an
+# artifact, without a release; main itself is built through its tags.
 
 on:
   push:
     tags: ['v*']
+    branches-ignore: [main]
   workflow_dispatch:
 
 permissions:
