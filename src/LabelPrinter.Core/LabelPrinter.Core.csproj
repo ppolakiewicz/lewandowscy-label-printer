@@ -6,4 +6,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Brings SQLitePCLRaw.bundle_e_sqlite3: the native e_sqlite3.dll is bundled into the
+         single-file exe (IncludeNativeLibrariesForSelfExtract) and extracted on start. -->
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="LabelPrinter.Core.Tests" />
+  </ItemGroup>
+
 </Project>
