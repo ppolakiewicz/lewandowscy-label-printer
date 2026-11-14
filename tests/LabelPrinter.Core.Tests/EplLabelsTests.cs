@@ -13,8 +13,38 @@ public class EplLabelsTests
     {
         var job = AsText(EplLabels.Image(new PrinterConfig(), new MonoBitmap(400, 240), copies: 3));
 
-        Assert.StartsWith("\nQ240,24\nq400\nS2\nD8\nZT\nR0,0\nN\nGW0,0,50,240,", job);
+        Assert.StartsWith("\nQ240,24\nq832\nS2\nD8\nZT\nR216,0\nN\nGW0,0,50,240,", job);
         Assert.EndsWith("\nP3\n", job);
+    }
+
+    [Theory]
+    [InlineData(50, 104, 216)]  // 50 mm label on the LP2844: print from 27 mm to 77 mm
+    [InlineData(100, 150, 200)] // 100 mm label on a 150 mm head: print from 25 mm to 125 mm
+    [InlineData(104, 104, 0)]   // full-width label
+    public void Image_CentersPrintAreaOnTheHead(double labelMm, double headMm, int marginDots)
+    {
+        var config = new PrinterConfig { LabelWidthMm = labelMm, PrintWidthMm = headMm };
+        var job = AsText(EplLabels.Image(config, new MonoBitmap(config.LabelWidthDots, 240), copies: 1));
+
+        Assert.Contains($"\nq{config.Normalized().PrintWidthDots}\n", job);
+        Assert.Contains($"\nR{marginDots},0\nN\n", job);
+    }
+
+    [Fact]
+    public void TestLabel_UsesTheSameCenteredPrintArea()
+    {
+        var job = AsText(EplLabels.TestLabel(new PrinterConfig()));
+
+        Assert.Contains("\nR216,0\nN\n", job);
+    }
+
+    [Fact]
+    public void Normalized_LabelNotWiderThanPrintWidth()
+    {
+        var c = new PrinterConfig { LabelWidthMm = 80, PrintWidthMm = 56 }.Normalized();
+
+        Assert.Equal(56, c.LabelWidthMm);
+        Assert.Equal(0, c.LeftMarginDots);
     }
 
     [Fact]

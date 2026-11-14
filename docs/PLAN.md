@@ -13,7 +13,11 @@
 - Aplikacja wysyła gotowe polecenia **EPL2** jako RAW (`OpenPrinter`/`WritePrinter`, winspool).
 - Etykieta renderowana w aplikacji do bitmapy 1-bit i wysyłana poleceniem `GW`
   (polskie znaki, dowolna czcionka, podgląd = wydruk).
-- 203 dpi = 8 punktów/mm → 50×30 mm = **400×240 punktów** (`q400`, `Q240,24`).
+- 203 dpi = 8 punktów/mm → 50×30 mm = **400×240 punktów** (`Q240,24`).
+- Obszar druku: rolka jest prowadzona środkiem głowicy (LP2844: 104 mm = 832 punkty), więc etykieta
+  zaczyna się (głowica − etykieta) / 2 od krawędzi. Program wysyła `q832` i `R216,0` – `R` ustawia bufor
+  na całą głowicę i przesuwa początek układu na lewą krawędź etykiety. (Samo `q` też centruje, ale `R`
+  wysłane po nim je unieważnia – tak było wcześniej: `q400` + `R0,0` drukowało od lewej krawędzi głowicy.)
 - Ustawienia kalibracji: przesunięcie X/Y, ciemność (`D`), prędkość (`S`), przerwa.
 
 ## Technologia

@@ -78,11 +78,14 @@ public static class EplLabels
         return new EplWriter()
             .Command("") // a leading line feed ends any half-received command
             .Command(Invariant($"Q{c.LabelHeightDots},{c.GapDots}"))
-            .Command(Invariant($"q{c.LabelWidthDots}"))
+            .Command(Invariant($"q{c.PrintWidthDots}"))
             .Command(Invariant($"S{c.Speed}"))
             .Command(Invariant($"D{c.Darkness}"))
             .Command(c.PrintTopFirst ? "ZT" : "ZB")
-            .Command("R0,0")
+            // The roll sits in the middle of the head, so the label starts (head - label) / 2 from its edge.
+            // R makes the image buffer as wide as the head (cancelling q) and moves the origin to the label's
+            // left edge, so x = 0 is the label edge whatever was stored in the printer before.
+            .Command(Invariant($"R{c.LeftMarginDots},0"))
             .Command("N");
     }
 }

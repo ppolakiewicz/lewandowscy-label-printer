@@ -28,6 +28,18 @@ public sealed class PrinterConfigStoreTests : IDisposable
     }
 
     [Fact]
+    public void Load_OldFileWithoutPrintWidth_UsesLp2844Width()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
+        File.WriteAllText(SettingsPath, "{ \"LabelWidthMm\": 50, \"Darkness\": 9 }");
+
+        var config = PrinterConfigStore.Load(SettingsPath);
+
+        Assert.Equal(104, config.PrintWidthMm);
+        Assert.Equal(216, config.LeftMarginDots);
+    }
+
+    [Fact]
     public void Load_CorruptFile_GivesDefaults()
     {
         Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);

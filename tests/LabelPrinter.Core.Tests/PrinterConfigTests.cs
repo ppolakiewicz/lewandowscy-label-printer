@@ -14,6 +14,7 @@ public class PrinterConfigTests
     [InlineData(nameof(PrinterConfig.PrinterName))]
     [InlineData(nameof(PrinterConfig.LabelWidthMm))]
     [InlineData(nameof(PrinterConfig.LabelHeightMm))]
+    [InlineData(nameof(PrinterConfig.PrintWidthMm))]
     [InlineData(nameof(PrinterConfig.GapMm))]
     [InlineData(nameof(PrinterConfig.OffsetXMm))]
     [InlineData(nameof(PrinterConfig.OffsetYMm))]
@@ -30,6 +31,7 @@ public class PrinterConfigTests
             case nameof(PrinterConfig.PrinterName): b.PrinterName = "X"; break;
             case nameof(PrinterConfig.LabelWidthMm): b.LabelWidthMm = 60; break;
             case nameof(PrinterConfig.LabelHeightMm): b.LabelHeightMm = 40; break;
+            case nameof(PrinterConfig.PrintWidthMm): b.PrintWidthMm = 56; break;
             case nameof(PrinterConfig.GapMm): b.GapMm = 2; break;
             case nameof(PrinterConfig.OffsetXMm): b.OffsetXMm = 1; break;
             case nameof(PrinterConfig.OffsetYMm): b.OffsetYMm = 1; break;

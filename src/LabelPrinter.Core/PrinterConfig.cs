@@ -10,10 +10,21 @@ public sealed class PrinterConfig
     public const int MinSpeed = 1;
     public const int MaxSpeed = 4;
     public const double MaxOffsetMm = 10;
+    public const double MinPrintWidthMm = 20;
+    public const double MaxPrintWidthMm = 220;
+
+    /// <summary>LP2844: 832 dots at 203 dpi = 104 mm.</summary>
+    public const double DefaultPrintWidthMm = 104;
 
     public string? PrinterName { get; set; }
     public double LabelWidthMm { get; set; } = 50;
     public double LabelHeightMm { get; set; } = 30;
+
+    /// <summary>
+    /// Full print width of the head. The printer guides the roll to the middle of the head, so a narrower
+    /// label sits in the middle of it; the print area is moved there by <see cref="LeftMarginDots"/>.
+    /// </summary>
+    public double PrintWidthMm { get; set; } = DefaultPrintWidthMm;
     public double GapMm { get; set; } = 3;
     public double OffsetXMm { get; set; }
     public double OffsetYMm { get; set; }
@@ -28,6 +39,14 @@ public sealed class PrinterConfig
 
     [JsonIgnore] public int LabelWidthDots => Units.MmToDots(LabelWidthMm);
     [JsonIgnore] public int LabelHeightDots => Units.MmToDots(LabelHeightMm);
+    [JsonIgnore] public int PrintWidthDots => Units.MmToDots(PrintWidthMm);
+
+    /// <summary>Distance from the head's left edge to the label's left edge: (head width - label width) / 2.</summary>
+    [JsonIgnore] public int LeftMarginDots => Math.Max(0, (PrintWidthDots - LabelWidthDots) / 2);
+
+    /// <summary>Same as <see cref="LeftMarginDots"/> in millimetres (for display).</summary>
+    [JsonIgnore] public double LeftMarginMm => Math.Max(0, (PrintWidthMm - LabelWidthMm) / 2);
+
     [JsonIgnore] public int GapDots => Units.MmToDots(GapMm);
     [JsonIgnore] public int OffsetXDots => Units.MmToDots(OffsetXMm);
     [JsonIgnore] public int OffsetYDots => Units.MmToDots(OffsetYMm);
@@ -36,7 +55,8 @@ public sealed class PrinterConfig
     public PrinterConfig Normalized()
     {
         var c = (PrinterConfig)MemberwiseClone();
-        c.LabelWidthMm = Math.Clamp(Finite(LabelWidthMm, 50), 10, 104);
+        c.PrintWidthMm = Math.Clamp(Finite(PrintWidthMm, DefaultPrintWidthMm), MinPrintWidthMm, MaxPrintWidthMm);
+        c.LabelWidthMm = Math.Clamp(Finite(LabelWidthMm, 50), 10, c.PrintWidthMm);
         c.LabelHeightMm = Math.Clamp(Finite(LabelHeightMm, 30), 5, 300);
         c.GapMm = Math.Clamp(Finite(GapMm, 3), 0, 20);
         c.OffsetXMm = Math.Clamp(Finite(OffsetXMm, 0), -MaxOffsetMm, MaxOffsetMm);
@@ -53,6 +73,7 @@ public sealed class PrinterConfig
         return PrinterName == other.PrinterName
             && LabelWidthMm.Equals(other.LabelWidthMm)
             && LabelHeightMm.Equals(other.LabelHeightMm)
+            && PrintWidthMm.Equals(other.PrintWidthMm)
             && GapMm.Equals(other.GapMm)
             && OffsetXMm.Equals(other.OffsetXMm)
             && OffsetYMm.Equals(other.OffsetYMm)

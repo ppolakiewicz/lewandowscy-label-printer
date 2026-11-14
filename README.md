@@ -81,6 +81,9 @@ tylko zamyka listę. Drukuje dopiero kolejne naciśnięcie Enter.
 Przy pierwszym uruchomieniu program sam proponuje otwarcie ustawień. Tam:
 
 - wybierz drukarkę (np. `Zebra LP2844`) – „Odśwież” wczytuje listę ponownie,
+- **Szerokość druku drukarki** – pełna szerokość głowicy (LP2844: **104 mm**). Rolka jest prowadzona środkiem
+  głowicy, więc węższa etykieta leży na środku – program sam przesuwa obszar druku na etykietę
+  (dla 50 mm: od 27 do 77 mm). Pod polem widać wyliczony zakres. Zmieniaj tylko przy innej drukarce,
 - **Auto-kalibracja czujnika** – drukarka sama mierzy etykietę i przerwę (wysuwa kilka etykiet),
 - **Wydruk testowy** – ramka powinna leżeć na krawędzi etykiety, czarny kwadrat w prawym dolnym rogu.
   Jeśli ramka jest przesunięta, popraw „Przesunięcie” (mm). Za jasno/ciemno → „Ciemność”.

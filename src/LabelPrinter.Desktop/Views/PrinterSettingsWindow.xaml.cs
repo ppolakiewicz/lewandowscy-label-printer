@@ -84,6 +84,7 @@ public partial class PrinterSettingsWindow : Window
     private void ShowConfig(PrinterConfig config)
     {
         WidthBox.Text = Format(config.LabelWidthMm);
+        PrintWidthBox.Text = Format(config.PrintWidthMm);
         HeightBox.Text = Format(config.LabelHeightMm);
         GapBox.Text = Format(config.GapMm);
         OffsetXBox.Text = Format(config.OffsetXMm);
@@ -101,6 +102,8 @@ public partial class PrinterSettingsWindow : Window
         error = string.Empty;
 
         if (!TryParse(WidthBox.Text, out var width)) { error = "Nieprawidłowa szerokość etykiety."; return false; }
+        if (!TryParse(PrintWidthBox.Text, out var printWidth)) { error = "Nieprawidłowa szerokość druku drukarki."; return false; }
+        if (width > printWidth) { error = "Etykieta nie może być szersza niż szerokość druku drukarki."; return false; }
         if (!TryParse(HeightBox.Text, out var height)) { error = "Nieprawidłowa wysokość etykiety."; return false; }
         if (!TryParse(GapBox.Text, out var gap)) { error = "Nieprawidłowa przerwa między etykietami."; return false; }
         if (!TryParse(OffsetXBox.Text, out var offsetX)) { error = "Nieprawidłowe przesunięcie w poziomie."; return false; }
@@ -108,6 +111,7 @@ public partial class PrinterSettingsWindow : Window
 
         config.PrinterName = PrinterCombo.SelectedItem as string;
         config.LabelWidthMm = width;
+        config.PrintWidthMm = printWidth;
         config.LabelHeightMm = height;
         config.GapMm = gap;
         config.OffsetXMm = offsetX;
@@ -262,11 +266,20 @@ public partial class PrinterSettingsWindow : Window
 
     private void UpdatePreview()
     {
-        if (!_ready || !TryReadConfig(out var config, out _))
+        if (!_ready)
         {
             return;
         }
 
+        if (!TryReadConfig(out var config, out var error))
+        {
+            PrintAreaText.Text = error;
+            return;
+        }
+
+        PrintAreaText.Text = string.Format(CultureInfo.CurrentCulture,
+            "Rolka jest na środku głowicy, więc program drukuje od {0:0.#} do {1:0.#} mm szerokości druku.",
+            config.LeftMarginMm, config.LeftMarginMm + config.LabelWidthMm);
         PreviewImage.Source = EplLabels.TestPattern(config).ToBitmapSource();
     }
 
