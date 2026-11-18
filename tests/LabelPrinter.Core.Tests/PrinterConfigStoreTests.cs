@@ -36,7 +36,20 @@ public sealed class PrinterConfigStoreTests : IDisposable
         var config = PrinterConfigStore.Load(SettingsPath);
 
         Assert.Equal(104, config.PrintWidthMm);
+        Assert.Equal(RollGuide.Center, config.RollGuide);
         Assert.Equal(216, config.LeftMarginDots);
+    }
+
+    [Theory]
+    [InlineData(RollGuide.Center)]
+    [InlineData(RollGuide.LeftEdge)]
+    [InlineData(RollGuide.RightEdge)]
+    public void SaveThenLoad_KeepsRollGuide(RollGuide guide)
+    {
+        PrinterConfigStore.Save(SettingsPath, new PrinterConfig { RollGuide = guide });
+
+        Assert.Contains($"\"{guide}\"", File.ReadAllText(SettingsPath));
+        Assert.Equal(guide, PrinterConfigStore.Load(SettingsPath).RollGuide);
     }
 
     [Fact]

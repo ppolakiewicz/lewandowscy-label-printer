@@ -3,7 +3,7 @@ using static System.FormattableString;
 
 namespace LabelPrinter.Core.Epl;
 
-/// <summary>Complete EPL2 jobs for the LP2844.</summary>
+/// <summary>Complete EPL2 jobs for 203 dpi Zebra printers (LP2844, ZT231).</summary>
 public static class EplLabels
 {
     public const int MaxCopies = 999;
@@ -82,7 +82,7 @@ public static class EplLabels
             .Command(Invariant($"S{c.Speed}"))
             .Command(Invariant($"D{c.Darkness}"))
             .Command(c.PrintTopFirst ? "ZT" : "ZB")
-            // The roll sits in the middle of the head, so the label starts (head - label) / 2 from its edge.
+            // The label starts LeftMarginDots from the head's edge, depending on how the printer guides the roll.
             // R makes the image buffer as wide as the head (cancelling q) and moves the origin to the label's
             // left edge, so x = 0 is the label edge whatever was stored in the printer before.
             .Command(Invariant($"R{c.LeftMarginDots},0"))

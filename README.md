@@ -1,7 +1,7 @@
 # lewandowscy-label-printer
 
 Aplikacja Windows (jeden plik `Etykiety.exe`) do tworzenia i drukowania etykiet 50×30 mm
-na drukarce Zebra LP2844 podłączonej przez USB. Plan: [docs/PLAN.md](docs/PLAN.md).
+na drukarce Zebra LP2844 lub ZT231 (203 dpi) podłączonej przez USB. Plan: [docs/PLAN.md](docs/PLAN.md).
 
 ## Pobranie programu
 
@@ -30,6 +30,17 @@ git config push.followTags true
 4. Producent **Generic**, drukarka **Generic / Text Only**. Nazwa np. `Zebra LP2844`.
 5. Nie drukuj strony testowej Windows (wydrukowałaby śmieci) – zamiast tego użyj
    „Wydruk testowy” w programie.
+
+### Zebra ZT231
+
+Program działa tylko z wersją **203 dpi** (wersja 300 dpi nie ma języka EPL). Instalacja w Windows jest taka sama,
+a dodatkowo:
+
+1. Na drukarce ustaw `System > Program Language > Command Language` na **EPL**.
+2. Skalibruj czujnik etykiet.
+3. W programie („Ustawienia drukarki…”) zostaw szerokość druku **104 mm**, prędkość **2** i ustaw
+   **Prowadzenie rolki** na **Lewa krawędź głowicy**.
+4. Zrób **Wydruk testowy**. Jeśli ramka nie trafia w etykietę, wybierz **Prawa krawędź głowicy** i powtórz test.
 
 ## Instrukcja obsługi
 
@@ -81,13 +92,15 @@ tylko zamyka listę. Drukuje dopiero kolejne naciśnięcie Enter.
 Przy pierwszym uruchomieniu program sam proponuje otwarcie ustawień. Tam:
 
 - wybierz drukarkę (np. `Zebra LP2844`) – „Odśwież” wczytuje listę ponownie,
-- **Szerokość druku drukarki** – pełna szerokość głowicy (LP2844: **104 mm**). Rolka jest prowadzona środkiem
-  głowicy, więc węższa etykieta leży na środku – program sam przesuwa obszar druku na etykietę
-  (dla 50 mm: od 27 do 77 mm). Pod polem widać wyliczony zakres. Zmieniaj tylko przy innej drukarce,
+- **Szerokość druku drukarki** – pełna szerokość głowicy (LP2844 i ZT231: **104 mm**),
+- **Prowadzenie rolki** – gdzie drukarka trzyma węższą rolkę: **Środek głowicy** (LP2844, etykieta 50 mm: od 27
+  do 77 mm) albo **Lewa** / **Prawa krawędź głowicy** (ZT231: od 0 do 50 mm albo od 54 do 104 mm). Program sam
+  przesuwa obszar druku na etykietę, a pod polem widać wyliczony zakres,
 - **Auto-kalibracja czujnika** – drukarka sama mierzy etykietę i przerwę (wysuwa kilka etykiet),
 - **Wydruk testowy** – ramka powinna leżeć na krawędzi etykiety, czarny kwadrat w prawym dolnym rogu.
   Jeśli ramka jest przesunięta, popraw „Przesunięcie” (mm). Za jasno/ciemno → „Ciemność”.
-  Kwadrat u góry → odznacz „Drukuj od góry”,
+  Kwadrat u góry → odznacz „Drukuj od góry” (na drukarce prowadzącej rolkę krawędzią sprawdź potem ponownie
+  prowadzenie rolki),
 - **Zapisz ustawienia** (wydruk testowy i auto-kalibracja też zapisują). Zamknięcie okna z niezapisanymi
   zmianami – program zapyta, czy je zapisać.
 

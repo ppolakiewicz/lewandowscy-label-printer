@@ -2,6 +2,20 @@ using System.Text.Json.Serialization;
 
 namespace LabelPrinter.Core;
 
+/// <summary>Where the printer holds a roll narrower than its print head.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<RollGuide>))]
+public enum RollGuide
+{
+    /// <summary>In the middle of the head (LP2844).</summary>
+    Center,
+
+    /// <summary>Against the edge where the head's dots start (x = 0).</summary>
+    LeftEdge,
+
+    /// <summary>Against the opposite edge of the head.</summary>
+    RightEdge,
+}
+
 /// <summary>Printer and label settings, persisted between runs.</summary>
 public sealed class PrinterConfig
 {
@@ -21,10 +35,13 @@ public sealed class PrinterConfig
     public double LabelHeightMm { get; set; } = 30;
 
     /// <summary>
-    /// Full print width of the head. The printer guides the roll to the middle of the head, so a narrower
-    /// label sits in the middle of it; the print area is moved there by <see cref="LeftMarginDots"/>.
+    /// Full print width of the head. A narrower label sits where <see cref="RollGuide"/> says; the print area
+    /// is moved there by <see cref="LeftMarginDots"/>.
     /// </summary>
     public double PrintWidthMm { get; set; } = DefaultPrintWidthMm;
+
+    /// <summary>Where the roll runs on the head. Settings saved before this option existed mean the LP2844's centre.</summary>
+    public RollGuide RollGuide { get; set; } = RollGuide.Center;
     public double GapMm { get; set; } = 3;
     public double OffsetXMm { get; set; }
     public double OffsetYMm { get; set; }
@@ -41,17 +58,30 @@ public sealed class PrinterConfig
     [JsonIgnore] public int LabelHeightDots => Units.MmToDots(LabelHeightMm);
     [JsonIgnore] public int PrintWidthDots => Units.MmToDots(PrintWidthMm);
 
-    /// <summary>Distance from the head's left edge to the label's left edge: (head width - label width) / 2.</summary>
-    [JsonIgnore] public int LeftMarginDots => Math.Max(0, (PrintWidthDots - LabelWidthDots) / 2);
+    /// <summary>Distance from the head's left edge to the label's left edge, depending on <see cref="RollGuide"/>.</summary>
+    [JsonIgnore]
+    public int LeftMarginDots
+    {
+        get
+        {
+            int free = Math.Max(0, PrintWidthDots - LabelWidthDots);
+            return RollGuide switch
+            {
+                RollGuide.LeftEdge => 0,
+                RollGuide.RightEdge => free,
+                _ => free / 2,
+            };
+        }
+    }
 
     /// <summary>Same as <see cref="LeftMarginDots"/> in millimetres (for display).</summary>
-    [JsonIgnore] public double LeftMarginMm => Math.Max(0, (PrintWidthMm - LabelWidthMm) / 2);
+    [JsonIgnore] public double LeftMarginMm => (double)LeftMarginDots / Units.DotsPerMm;
 
     [JsonIgnore] public int GapDots => Units.MmToDots(GapMm);
     [JsonIgnore] public int OffsetXDots => Units.MmToDots(OffsetXMm);
     [JsonIgnore] public int OffsetYDots => Units.MmToDots(OffsetYMm);
 
-    /// <summary>Returns a copy with every value clamped to what the LP2844 accepts.</summary>
+    /// <summary>Returns a copy with every value clamped to what the printer accepts.</summary>
     public PrinterConfig Normalized()
     {
         var c = (PrinterConfig)MemberwiseClone();
@@ -63,6 +93,7 @@ public sealed class PrinterConfig
         c.OffsetYMm = Math.Clamp(Finite(OffsetYMm, 0), -MaxOffsetMm, MaxOffsetMm);
         c.Darkness = Math.Clamp(Darkness, MinDarkness, MaxDarkness);
         c.Speed = Math.Clamp(Speed, MinSpeed, MaxSpeed);
+        c.RollGuide = Enum.IsDefined(RollGuide) ? RollGuide : RollGuide.Center;
         return c;
     }
 
@@ -74,6 +105,7 @@ public sealed class PrinterConfig
             && LabelWidthMm.Equals(other.LabelWidthMm)
             && LabelHeightMm.Equals(other.LabelHeightMm)
             && PrintWidthMm.Equals(other.PrintWidthMm)
+            && RollGuide == other.RollGuide
             && GapMm.Equals(other.GapMm)
             && OffsetXMm.Equals(other.OffsetXMm)
             && OffsetYMm.Equals(other.OffsetYMm)

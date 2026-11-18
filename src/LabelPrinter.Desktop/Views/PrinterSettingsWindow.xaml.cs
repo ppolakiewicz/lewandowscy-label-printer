@@ -85,6 +85,7 @@ public partial class PrinterSettingsWindow : Window
     {
         WidthBox.Text = Format(config.LabelWidthMm);
         PrintWidthBox.Text = Format(config.PrintWidthMm);
+        RollGuideCombo.SelectedIndex = (int)config.RollGuide;
         HeightBox.Text = Format(config.LabelHeightMm);
         GapBox.Text = Format(config.GapMm);
         OffsetXBox.Text = Format(config.OffsetXMm);
@@ -112,6 +113,7 @@ public partial class PrinterSettingsWindow : Window
         config.PrinterName = PrinterCombo.SelectedItem as string;
         config.LabelWidthMm = width;
         config.PrintWidthMm = printWidth;
+        config.RollGuide = (RollGuide)RollGuideCombo.SelectedIndex;
         config.LabelHeightMm = height;
         config.GapMm = gap;
         config.OffsetXMm = offsetX;
@@ -277,9 +279,15 @@ public partial class PrinterSettingsWindow : Window
             return;
         }
 
+        var rollPosition = config.RollGuide switch
+        {
+            RollGuide.LeftEdge => "przy lewej krawędzi głowicy",
+            RollGuide.RightEdge => "przy prawej krawędzi głowicy",
+            _ => "na środku głowicy",
+        };
         PrintAreaText.Text = string.Format(CultureInfo.CurrentCulture,
-            "Rolka jest na środku głowicy, więc program drukuje od {0:0.#} do {1:0.#} mm szerokości druku.",
-            config.LeftMarginMm, config.LeftMarginMm + config.LabelWidthMm);
+            "Rolka jest {0}, więc program drukuje od {1:0.#} do {2:0.#} mm szerokości druku.",
+            rollPosition, config.LeftMarginMm, config.LeftMarginMm + config.LabelWidthMm);
         PreviewImage.Source = EplLabels.TestPattern(config).ToBitmapSource();
     }
 

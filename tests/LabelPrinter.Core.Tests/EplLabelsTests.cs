@@ -30,6 +30,31 @@ public class EplLabelsTests
         Assert.Contains($"\nR{marginDots},0\nN\n", job);
     }
 
+    [Theory]
+    [InlineData(RollGuide.Center, 216)]    // LP2844: 27-77 mm
+    [InlineData(RollGuide.LeftEdge, 0)]    // 0-50 mm
+    [InlineData(RollGuide.RightEdge, 432)] // 54-104 mm
+    public void Image_MovesPrintAreaToTheRoll(RollGuide guide, int marginDots)
+    {
+        var config = new PrinterConfig { RollGuide = guide };
+
+        var label = AsText(EplLabels.Image(config, new MonoBitmap(400, 240), copies: 1));
+        var test = AsText(EplLabels.TestLabel(config));
+
+        Assert.Contains($"\nq832\n", label);
+        Assert.Contains($"\nR{marginDots},0\nN\n", label);
+        Assert.Contains($"\nR{marginDots},0\nN\n", test);
+    }
+
+    [Fact]
+    public void Normalized_UnknownRollGuide_MeansCenter()
+    {
+        var c = new PrinterConfig { RollGuide = (RollGuide)7 }.Normalized();
+
+        Assert.Equal(RollGuide.Center, c.RollGuide);
+        Assert.Equal(216, c.LeftMarginDots);
+    }
+
     [Fact]
     public void TestLabel_UsesTheSameCenteredPrintArea()
     {

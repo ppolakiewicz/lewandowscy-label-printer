@@ -18,6 +18,8 @@
   zaczyna się (głowica − etykieta) / 2 od krawędzi. Program wysyła `q832` i `R216,0` – `R` ustawia bufor
   na całą głowicę i przesuwa początek układu na lewą krawędź etykiety. (Samo `q` też centruje, ale `R`
   wysłane po nim je unieważnia – tak było wcześniej: `q400` + `R0,0` drukowało od lewej krawędzi głowicy.)
+- Drukarki prowadzące rolkę krawędzią (ZT231, też 104 mm): ustawienie „Prowadzenie rolki” (środek / lewa / prawa
+  krawędź głowicy) daje `R0,0` albo `R432,0` zamiast `R216,0`.
 - Ustawienia kalibracji: przesunięcie X/Y, ciemność (`D`), prędkość (`S`), przerwa.
 
 ## Technologia

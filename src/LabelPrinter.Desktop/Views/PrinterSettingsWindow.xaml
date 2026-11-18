@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Ustawienia drukarki"
-        Width="860" Height="700" MinWidth="760" MinHeight="660"
+        Width="860" Height="735" MinWidth="760" MinHeight="695"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
     <DockPanel Margin="12">
         <DockPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
@@ -27,7 +27,7 @@
                             <ComboBox x:Name="PrinterCombo" SelectionChanged="Settings_SelectionChanged" />
                         </DockPanel>
                         <TextBlock Margin="0,6,0,0" FontSize="11" Foreground="Gray" TextWrapping="Wrap"
-                                   Text="Zebra LP2844 ma być dodana w Windows jako „Generic / Text Only” na porcie USB (np. USB001)." />
+                                   Text="Drukarka Zebra ma być dodana w Windows jako „Generic / Text Only” na porcie USB (np. USB001)." />
                     </StackPanel>
                 </GroupBox>
 
@@ -38,6 +38,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -65,38 +66,48 @@
 
                         <TextBlock Grid.Row="1" Text="Szerokość druku drukarki (mm)" />
                         <TextBox Grid.Row="1" Grid.Column="1" x:Name="PrintWidthBox" TextChanged="Settings_TextChanged"
-                                 ToolTip="Pełna szerokość głowicy. LP2844: 104 mm. Rolka jest prowadzona środkiem głowicy." />
+                                 ToolTip="Pełna szerokość głowicy. LP2844 i ZT231: 104 mm." />
 
-                        <TextBlock Grid.Row="2" Grid.ColumnSpan="2" x:Name="PrintAreaText" FontSize="11" Foreground="Gray"
+                        <TextBlock Grid.Row="2" Text="Prowadzenie rolki" />
+                        <!-- Items are in the order of the RollGuide enum. -->
+                        <ComboBox Grid.Row="2" Grid.Column="1" x:Name="RollGuideCombo" Margin="0,3"
+                                  SelectionChanged="Settings_SelectionChanged"
+                                  ToolTip="Gdzie drukarka trzyma rolkę. LP2844: środek. ZT231: krawędź – stronę wskaże wydruk testowy.">
+                            <ComboBoxItem Content="Środek głowicy" />
+                            <ComboBoxItem Content="Lewa krawędź głowicy" />
+                            <ComboBoxItem Content="Prawa krawędź głowicy" />
+                        </ComboBox>
+
+                        <TextBlock Grid.Row="3" Grid.ColumnSpan="2" x:Name="PrintAreaText" FontSize="11" Foreground="Gray"
                                    TextWrapping="Wrap" Margin="0,0,0,4" />
 
-                        <TextBlock Grid.Row="3" Text="Wysokość etykiety (mm)" />
-                        <TextBox Grid.Row="3" Grid.Column="1" x:Name="HeightBox" TextChanged="Settings_TextChanged" />
+                        <TextBlock Grid.Row="4" Text="Wysokość etykiety (mm)" />
+                        <TextBox Grid.Row="4" Grid.Column="1" x:Name="HeightBox" TextChanged="Settings_TextChanged" />
 
-                        <TextBlock Grid.Row="4" Text="Przerwa między etykietami (mm)" />
-                        <TextBox Grid.Row="4" Grid.Column="1" x:Name="GapBox" TextChanged="Settings_TextChanged" />
+                        <TextBlock Grid.Row="5" Text="Przerwa między etykietami (mm)" />
+                        <TextBox Grid.Row="5" Grid.Column="1" x:Name="GapBox" TextChanged="Settings_TextChanged" />
 
-                        <TextBlock Grid.Row="5" Text="Przesunięcie w poziomie (mm)" />
-                        <TextBox Grid.Row="5" Grid.Column="1" x:Name="OffsetXBox" TextChanged="Settings_TextChanged" />
+                        <TextBlock Grid.Row="6" Text="Przesunięcie w poziomie (mm)" />
+                        <TextBox Grid.Row="6" Grid.Column="1" x:Name="OffsetXBox" TextChanged="Settings_TextChanged" />
 
-                        <TextBlock Grid.Row="6" Text="Przesunięcie w pionie (mm)" />
-                        <TextBox Grid.Row="6" Grid.Column="1" x:Name="OffsetYBox" TextChanged="Settings_TextChanged" />
+                        <TextBlock Grid.Row="7" Text="Przesunięcie w pionie (mm)" />
+                        <TextBox Grid.Row="7" Grid.Column="1" x:Name="OffsetYBox" TextChanged="Settings_TextChanged" />
 
-                        <TextBlock Grid.Row="7" Text="Ciemność druku (0–15)" />
-                        <DockPanel Grid.Row="7" Grid.Column="1" Margin="0,3">
+                        <TextBlock Grid.Row="8" Text="Ciemność druku (0–15)" />
+                        <DockPanel Grid.Row="8" Grid.Column="1" Margin="0,3">
                             <TextBlock x:Name="DarknessValue" DockPanel.Dock="Right" Width="24" TextAlignment="Right" Margin="0" />
                             <Slider x:Name="DarknessSlider" Minimum="0" Maximum="15" TickFrequency="1"
                                     IsSnapToTickEnabled="True" ValueChanged="DarknessSlider_ValueChanged" />
                         </DockPanel>
 
-                        <TextBlock Grid.Row="8" Text="Prędkość (1–4)" />
-                        <ComboBox Grid.Row="8" Grid.Column="1" x:Name="SpeedCombo" Margin="0,3"
+                        <TextBlock Grid.Row="9" Text="Prędkość (1–4)" />
+                        <ComboBox Grid.Row="9" Grid.Column="1" x:Name="SpeedCombo" Margin="0,3"
                                   SelectionChanged="Settings_SelectionChanged" />
 
-                        <CheckBox Grid.Row="9" Grid.ColumnSpan="2" x:Name="TopFirstCheck" Margin="0,6,0,3"
+                        <CheckBox Grid.Row="10" Grid.ColumnSpan="2" x:Name="TopFirstCheck" Margin="0,6,0,3"
                                   Content="Drukuj od góry etykiety (ZT)" Click="Settings_Click" />
 
-                        <CheckBox Grid.Row="10" Grid.ColumnSpan="2" x:Name="InvertCheck" Margin="0,3"
+                        <CheckBox Grid.Row="11" Grid.ColumnSpan="2" x:Name="InvertCheck" Margin="0,3"
                                   Content="Odwróć grafikę (tylko gdy test wychodzi w negatywie)" Click="Settings_Click" />
                     </Grid>
                 </GroupBox>
